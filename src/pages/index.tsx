@@ -29,10 +29,10 @@ const StepResources = {
   },
 };
 
+export type MainDataArray = { [key: string]: string[] }[];
+
 export default function Home() {
-  const [mainDataArray, setMainDataArray] = useState<
-    { [key: string]: string[] }[]
-  >([]);
+  const [mainDataArray, setMainDataArray] = useState<MainDataArray>([]);
 
   const [currentStep, setCurrentStep] = useState<Steps>(Steps.UploadFile);
   const [maxStep, setMaxStep] = useState<Steps>(Steps.UploadFile);
@@ -75,21 +75,18 @@ export default function Home() {
           ))}
         </ul>
       </div>
-      <div className="mb-48 w-full rounded-3xl bg-violet-900/30 px-2 py-8 lg:w-fit lg:px-8">
+      <div className="mb-48 w-full rounded-3xl bg-violet-900/30 px-2 py-8 lg:px-8">
         <div hidden={currentStep !== Steps.UploadFile}>
           {currentStep === Steps.UploadFile && (
             <UploadFile
               onContinue={(newMainDataArray) => {
-                // console.log(
-                //   "newMainDataArray",
-                //   Object.keys(newMainDataArray).length
-                // );
-                // if (Object.keys(mainDataArray).length === 0) {
-                //   // Skip steps
-                //   setMaxStep(Steps.CallNumbers);
-                //   setCurrentStep(Steps.CallNumbers);
-                //   return;
-                // }
+                // console.log(Object.keys(mainDataArray) === 0);
+                if (newMainDataArray.length === 0) {
+                  // Skip steps
+                  setMaxStep(Steps.CallNumbers);
+                  setCurrentStep(Steps.CallNumbers);
+                  return;
+                }
                 setMainDataArray(newMainDataArray);
                 setCurrentStep(Steps.ModifyNumbers);
               }}
@@ -99,21 +96,20 @@ export default function Home() {
 
         <div hidden={currentStep !== Steps.ModifyNumbers}>
           {currentStep === Steps.ModifyNumbers && (
-            // <ModifyNumbers
-            //   mainDataArray={mainDataArray}
-            //   onContinue={(newMainDataArray) => {
-            //     setMainDataArray(newMainDataArray);
-            //     setCurrentStep(Steps.CallNumbers);
-            //   }}
-            // />
-            <div>working on it...</div>
+            <ModifyNumbers
+              mainDataArray={mainDataArray}
+              onContinue={(newMainDataArray) => {
+                setMainDataArray(newMainDataArray);
+                setCurrentStep(Steps.CallNumbers);
+              }}
+            />
           )}
         </div>
 
         <div hidden={currentStep !== Steps.CallNumbers}>
-          {/* {currentStep === Steps.CallNumbers && (
-            <CallNumbers desiredNumbers={numbers} />
-          )} */}
+          {currentStep === Steps.CallNumbers && (
+            <CallNumbers mainDataArray={mainDataArray} desiredNumbers={[]} />
+          )}
         </div>
       </div>
     </>

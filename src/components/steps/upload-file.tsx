@@ -1,17 +1,23 @@
 import { type WorkSheet, read, utils } from "xlsx";
-import { Dispatch, SetStateAction, createRef, useId, useState } from "react";
+import { createRef, useId, useState } from "react";
 
 import {
   convertToSpreadSheetNumber,
-  fixPhoneNumber,
   formatPhoneNumber,
   ezObj,
+  convertToSpreadSheetLetter,
 } from "~/utils/utils";
+import { MainDataArray } from "~/pages";
+
+const COLUMN_NUMBER_IDENTIFIER_DEFAULT_VALUE = "b";
+const COLUMN_NUMBER_DEFAULT_VALUE = "k";
+const ROW_START_IDX_DEFAULT_VALUE = 0;
+const MAX_ROWS_DEFAULT_VALUE = 10;
 
 export default function UploadFile({
   onContinue,
 }: {
-  onContinue: (mainDataArray: { [key: string]: string[] }[]) => void;
+  onContinue: (mainDataArray: MainDataArray) => void;
 }) {
   const id = useId();
   const id2 = useId();
@@ -19,11 +25,13 @@ export default function UploadFile({
   const id4 = useId();
   const id5 = useId();
 
-  const [mainDataArray, setMainDataArray] = useState<
-    { [key: string]: string[] }[]
-  >([]);
+  const [mainDataArray, setMainDataArray] = useState<MainDataArray>([]);
 
   const [file, setFile] = useState<File | undefined>(undefined);
+
+  const [columnLetterInputValues, setColumnLetterInputValues] = useState<
+    string[]
+  >([COLUMN_NUMBER_DEFAULT_VALUE]);
 
   const [
     phoneNumberColumnLetterInputBoxCount,
@@ -62,10 +70,12 @@ export default function UploadFile({
       columnNumberIdentifierError: "",
     });
 
-    let columnNumberIdentifier = 1;
+    let columnNumberIdentifier = convertToSpreadSheetNumber(
+      COLUMN_NUMBER_IDENTIFIER_DEFAULT_VALUE
+    );
     let columnNumbers: Array<number> = [];
-    let rowStartIdx = 0;
-    let maxRows = 10;
+    let rowStartIdx = ROW_START_IDX_DEFAULT_VALUE;
+    let maxRows = MAX_ROWS_DEFAULT_VALUE;
 
     function handleColumnNumberIdentifierInput() {
       const columnNumberIdentifierValue =
@@ -109,7 +119,7 @@ export default function UploadFile({
             finalColumnNumber = Number(button.value);
           }
 
-          finalColumnNumber = convertToSpreadSheetNumber(button.value);
+          // finalColumnNumber = convertToSpreadSheetNumber(button.value);
           if (finalColumnNumber != null) {
             columnNumbers.push(finalColumnNumber);
           }
@@ -189,6 +199,7 @@ export default function UploadFile({
     });
     return _errors.length > 0;
   }
+
   return (
     <>
       <div className="flex flex-col items-center gap-12 lg:flex-row lg:items-start">
@@ -209,7 +220,7 @@ export default function UploadFile({
           </label>
           <input
             type="text"
-            defaultValue="a"
+            defaultValue={COLUMN_NUMBER_IDENTIFIER_DEFAULT_VALUE}
             ref={refs.columnNumberIdentifier}
             className={`input ${
               errors.columnNumberIdentifierError.length > 0
@@ -237,6 +248,61 @@ export default function UploadFile({
             >
               -
             </button>
+            <button
+              className="btn"
+              disabled={!file}
+              onClick={() => {
+                if (!file) return;
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                  console.log("on load");
+                  const data = new Uint8Array(e.target?.result as ArrayBuffer);
+
+                  const workbook = read(data, { type: "array" });
+
+                  const worksheet: WorkSheet =
+                    workbook.Sheets[workbook.SheetNames[0] as string] || {};
+
+                  const jsonData = utils.sheet_to_json(worksheet, {
+                    header: 1,
+                  });
+                  const columnIndexes: Array<string> = [];
+                  let reps = 0;
+                  for (const row of jsonData as unknown[][]) {
+                    if (reps > 0) break;
+                    console.log(row);
+                    row.forEach((cellValue) => {
+                      const ccv = cellValue as string;
+                      console.log(ccv);
+                      if (
+                        ccv.toLowerCase().includes("phone") &&
+                        !ccv.toLowerCase().includes("type")
+                      ) {
+                        columnIndexes.push(
+                          convertToSpreadSheetLetter(row.indexOf(cellValue) + 1)
+                        );
+                      }
+                    });
+
+                    console.log(columnIndexes);
+
+                    reps++;
+                  }
+                  setColumnLetterInputValues([
+                    ...columnIndexes.map((cv, i) => {
+                      // if (i == 0) return "";
+                      return String(cv);
+                    }),
+                  ]);
+                  setPhoneNumberColumnLetterInputBoxCount(columnIndexes.length);
+                };
+
+                reader.readAsArrayBuffer(file);
+              }}
+            >
+              Auto Detect
+            </button>
           </div>
           <div ref={refs.columnNumber} className="flex w-96 flex-wrap gap-2">
             {Array.from({
@@ -244,7 +310,13 @@ export default function UploadFile({
             }).map((_, i) => (
               <input
                 type="text"
-                defaultValue="b"
+                value={columnLetterInputValues[i]}
+                onChange={(e) => {
+                  console.log(e.target.value);
+                  const values = [...columnLetterInputValues];
+                  values[i] = e.target.value;
+                  setColumnLetterInputValues(values);
+                }}
                 className={`input w-28 ${
                   errors.columnNumberError.length > 0
                     ? "input-error"
@@ -258,7 +330,7 @@ export default function UploadFile({
           <label htmlFor="">Skip rows</label>
           <input
             type="text"
-            defaultValue={0}
+            defaultValue={ROW_START_IDX_DEFAULT_VALUE}
             ref={refs.rowStartIdx}
             className={`input ${
               errors.rowStartIdxError.length > 0
@@ -269,7 +341,7 @@ export default function UploadFile({
           <label htmlFor="">Maximum Rows to load (set 0 for all)</label>
           <input
             type="text"
-            defaultValue={10}
+            defaultValue={MAX_ROWS_DEFAULT_VALUE}
             ref={refs.maxRows}
             className={`input ${
               errors.maxRowsError.length > 0 ? "input-error" : "input-success"
@@ -311,11 +383,11 @@ export default function UploadFile({
             I don't have a spreadsheet.
           </button>
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex w-full flex-col gap-2">
           <h4 className="text-xl font-bold">Overview of Your Loaded Data</h4>
           <p>Currently only supports US based numbers</p>
 
-          <div className="my-2 rounded-xl bg-primary/50 p-2">
+          <div className="my-2 w-full flex-1 rounded-xl bg-primary/50 p-2">
             <table>
               <thead>
                 <tr>
@@ -378,9 +450,7 @@ export default function UploadFile({
 
 function readExcelFile(
   file: File,
-  setMainDataArray: React.Dispatch<
-    React.SetStateAction<{ [key: string]: string[] }[]>
-  >,
+  setMainDataArray: React.Dispatch<React.SetStateAction<MainDataArray>>,
   columnNumberIdentifier: number,
   columnNumbers: number[],
   rowStartIdx: number,
@@ -421,7 +491,7 @@ function readExcelFile(
       // Push the columnValues array into localColumnNumberIdentifiers if it has at least one non-empty value
       if (hasNonEmptyValue) {
         localColumnNumberIdentifiers.push({
-          [String(row[columnNumberIdentifier - 1] ?? "No Name")]:
+          [String(row[columnNumberIdentifier - 1] ?? "No Identifier")]:
             columnValues.filter((value) => value.length > 0),
         });
       }

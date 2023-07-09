@@ -3,19 +3,29 @@ import {
   MouseEventHandler,
   createRef,
   useEffect,
+  useId,
   useState,
 } from "react";
 import { CallInstance } from "twilio/lib/rest/api/v2010/account/call";
+import { MainDataArray } from "~/pages";
 import { api } from "~/utils/api";
-import { fixPhoneNumber, formatPhoneNumber } from "~/utils/utils";
+import { ezObj, fixPhoneNumber, formatPhoneNumber } from "~/utils/utils";
+import Dropdown from "../dropdown";
+import { env } from "process";
 
 export default function CallNumbers({
+  mainDataArray,
   desiredNumbers,
 }: {
+  mainDataArray: MainDataArray;
   desiredNumbers: string[];
 }) {
-  const [numbers, setNumbers] = useState<string[]>([]);
+  const [newMainDataArray, setNewMainDataArray] = useState<MainDataArray>([]);
+
   const [currentNumber, setCurrentNumber] = useState<string>("");
+  const [currentAvailableNumbers, setCurrentAvailableNumbers] = useState<
+    string[]
+  >([]);
   const [callData, setCallData] = useState<{ [x: string]: CallInstance }>();
 
   const callButtonRef = createRef<HTMLButtonElement>();
@@ -40,17 +50,28 @@ export default function CallNumbers({
   }, [currentNumber]);
 
   useEffect(() => {
-    const localNumbers = [...desiredNumbers];
-    const modifiedNumbers = [];
+    // This goes through the data and removes empty strings, and deletes objects with no phone numbers
+    const localCopy = structuredClone(mainDataArray);
+    const updatedLocalCopy = localCopy
+      .map((obj) => {
+        const updatedObj = { ...obj };
+        Object.keys(updatedObj).forEach((key) => {
+          const updatedArr = updatedObj[key]!.filter((str) => str !== "");
+          updatedObj[key] = updatedArr;
+          if (updatedArr.length === 0) {
+            delete updatedObj[key];
+          } else {
+          }
+        });
 
-    for (let i = 0; i < localNumbers.length; i++) {
-      if (fixPhoneNumber(localNumbers[i]!).length !== 0) {
-        modifiedNumbers.push(fixPhoneNumber(localNumbers[i]!));
-      }
-    }
+        return updatedObj;
+      })
+      .filter((obj) => Object.keys(obj).length > 0);
 
-    setNumbers(modifiedNumbers);
-  }, [desiredNumbers]);
+    // console.log(updatedLocalCopy);
+
+    setNewMainDataArray(updatedLocalCopy);
+  }, [mainDataArray]);
 
   async function handleCall() {
     const button = callButtonRef.current;
@@ -75,30 +96,40 @@ export default function CallNumbers({
       return { ...call, [currentNumber]: calldata };
     });
   }
+  const id = useId();
 
   return (
     <div className="flex flex-col">
-      <h2 className="bg-gradient-to-r from-purple-500 via-purple-400 to-purple-300 bg-clip-text text-center text-2xl font-extrabold text-transparent transition-colors duration-300">
+      <h2 className="bg-gradient-to-r from-purple-500 via-purple-400 to-purple-300 bg-clip-text  pb-4 text-center text-2xl font-extrabold text-transparent transition-colors duration-300">
         Ready to Call!
       </h2>
-      <h4>Your call list: </h4>
+
       <div className="flex gap-2">
-        <div className="flex h-[400px] w-72 flex-col gap-2 overflow-y-auto rounded-l-xl bg-violet-900/50 p-8">
-          {numbers.map((number) => (
+        <div className="flex h-[400px] w-96 flex-col gap-2 overflow-y-auto rounded-l-xl bg-violet-900/50 p-8">
+          <h4 className="pb-2 text-center text-xl font-bold">Your Call List</h4>
+          {newMainDataArray.map((data, i) => (
             <button
               className="btn"
-              key={number}
-              onClick={() => setCurrentNumber(number)}
+              key={`${ezObj(data).value[0]}-${i}`}
+              onClick={() => setCurrentAvailableNumbers(ezObj(data).value)}
             >
-              {formatPhoneNumber(number)}
+              {ezObj(data).title}
             </button>
           ))}
         </div>
-        <div className="rounded-r-xl bg-violet-900/70 lg:w-[700px]">
+        <div className="flex-1 rounded-r-xl bg-violet-900/70">
           <h4 className="pt-6 text-center text-xl font-bold text-violet-200">
-            {currentNumber
-              ? formatPhoneNumber(currentNumber)
-              : "Select a number to call"}
+            {currentAvailableNumbers.length === 0 && "Select a Number to Call"}
+            {currentAvailableNumbers.length > 0 && (
+              <Dropdown
+                items={currentAvailableNumbers}
+                onSelect={(item) => {
+                  console.log("Yes: ", item);
+                  setCurrentNumber(item);
+                }}
+                key={`${id}-${currentAvailableNumbers[0] || 0}`}
+              />
+            )}
           </h4>
           {currentNumber && (
             <div className="flex flex-col items-center pt-14">
@@ -148,8 +179,11 @@ export default function CallNumbers({
                 <div className="mx-2 my-4 flex w-fit flex-col justify-start self-start bg-black/50 p-2">
                   <pre>
                     Latest Call Information:{" "}
-                    {callLogQuery.data.map((log) => (
-                      <div key={log.sid} className="border border-solid p-1">
+                    {callLogQuery.data.map((log, i) => (
+                      <div
+                        key={`${log.sid}-${i}`}
+                        className="border border-solid p-1"
+                      >
                         <pre>Call Sid: {log.sid}</pre>
                         <pre>Call Status: {log.status}</pre>
                         <pre>Call Status: {log.callerName}</pre>

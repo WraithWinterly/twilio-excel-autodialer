@@ -1,20 +1,43 @@
-import { useEffect, useState } from "react";
-import { number, set } from "zod";
-import { fixPhoneNumber, formatPhoneNumber } from "~/utils/utils";
+import { useEffect, useId, useState } from "react";
+import { MainDataArray } from "~/pages";
+import { ezObj, fixPhoneNumber, formatPhoneNumber } from "~/utils/utils";
 
 export default function ModifyNumbers({
-  numbers,
-  originalNumbers,
+  mainDataArray,
   onContinue,
 }: {
-  numbers: string[];
-  originalNumbers: string[];
-  onContinue: (numbers: string[]) => void;
+  mainDataArray: MainDataArray;
+  onContinue: (mainDataArray: MainDataArray) => void;
 }) {
-  const [desiredNumbers, setDesiredNumbers] = useState<string[]>(numbers);
+  const [newMainDataArray, setNewMainDataArray] = useState<MainDataArray>([]);
+
   useEffect(() => {
-    setDesiredNumbers(numbers);
-  }, [numbers]);
+    // This goes through the array and formats the phone numbers to have no symbols
+    // +1 (000) 000-000  =>  +10000000000
+    const localCopy = structuredClone(mainDataArray);
+    const updatedLocalCopy = localCopy.map((obj) => {
+      const updatedObj = { ...obj };
+      Object.keys(updatedObj).forEach((key) => {
+        const updatedArr = updatedObj[key]!.map((str) => {
+          if (str === "") return str;
+          return fixPhoneNumber(str);
+        });
+
+        updatedObj[key] = updatedArr;
+      });
+
+      return updatedObj;
+    });
+
+    setNewMainDataArray(updatedLocalCopy);
+  }, [mainDataArray]);
+
+  const id = useId();
+  const id2 = useId();
+  const id3 = useId();
+  const id4 = useId();
+  const id5 = useId();
+
   return (
     <div className="flex w-full max-w-2xl flex-col gap-2">
       <h1 className="text-3xl font-bold">Modify Numbers</h1>
@@ -28,52 +51,97 @@ export default function ModifyNumbers({
       <b>You may leave the values red or empty and they will be ignored.</b>
 
       <div className="mx-auto flex h-[400px] w-full gap-8 overflow-auto pt-10">
-        <div className="flex w-52 flex-col gap-2">
-          <h4 className="h-12">Original Loaded Values</h4>
-          {numbers.map((number, index) => (
-            <div
-              key={index}
-              className="flex h-12 w-52 shrink-0 rounded-md bg-violet-900/50 px-4 pt-[0.6rem]"
-            >
-              <p>{originalNumbers[index]}</p>
-            </div>
-          ))}
-        </div>
-        <div className="flex w-52 flex-col gap-2">
-          <h4 className="h-12">Input Your Values</h4>
-          {desiredNumbers.map((number, index) => (
-            <input
-              key={index}
-              defaultValue={desiredNumbers[index]}
-              onChange={(e) => {
-                const newNumbers = [...desiredNumbers];
-                newNumbers[index] = e.target.value;
-                setDesiredNumbers(newNumbers);
-              }}
-              className="input h-12 w-52 shrink-0"
-            />
-          ))}
-        </div>
-        <div className="flex w-52 flex-col gap-2">
-          <h4 className="h-12">Final Values</h4>
-          {desiredNumbers.map((number, index) => (
-            <div
-              key={index}
-              className={`h-12 w-52 shrink-0 rounded-md px-4 pt-[0.6rem] ${
-                fixPhoneNumber(number).length > 0
-                  ? "bg-green-600"
-                  : "bg-red-600 "
-              }`}
-            >
-              <p>{formatPhoneNumber(fixPhoneNumber(desiredNumbers[index]!))}</p>
-            </div>
-          ))}
-        </div>
+        <table>
+          <thead>
+            <tr>
+              <th className="mx-8 px-8">Identifier</th>
+              <th className="mx-8 px-8">Original Number</th>
+              <th className="mx-8 px-8">Input Number (Edit These)</th>
+              <th className="mx-8 px-8">Detected Number</th>
+            </tr>
+          </thead>
+          <tbody className="">
+            {mainDataArray?.map((data, index) => (
+              <tr
+                key={`${id3}-${index}`}
+                className="items-center border-b-4 border-solid border-gray-800 text-start"
+              >
+                {/* Identifier */}
+                {!!mainDataArray && (
+                  <td className="bg-violet-900/80">{ezObj(data).title}</td>
+                )}
+                {/* Original Number */}
+                <td className="">
+                  {ezObj(data).value.map((v, i) => (
+                    <span
+                      className="block 
+                    whitespace-nowrap bg-violet-900/80 p-3"
+                      key={`${id4}-${i}`}
+                    >{`${i + 1}: ${v}`}</span>
+                  ))}
+                </td>
+                {/* Input Number */}
+                <td className="">
+                  {!!newMainDataArray[index] &&
+                    ezObj(newMainDataArray[index]!).value.map((v, i) => (
+                      <input
+                        className={`input m-0 block rounded-none border-none border-gray-500 bg-violet-800/80 p-1`}
+                        key={`${id4}-${i}`}
+                        defaultValue={v}
+                        onBlur={(e) => {
+                          setNewMainDataArray((prev) => {
+                            const newMainDataArrayCopy = [...prev];
+                            const val = Object.values(
+                              newMainDataArrayCopy[index]!
+                            )[0];
+                            // console.log(val);
+
+                            val![i] = e.target.value;
+                            // console.log(val[i]);
+
+                            return newMainDataArrayCopy;
+                          });
+                          // const newValue = e.target.value;
+                          // const newMainDataArrayCopy = [...newMainDataArray];
+                          // newMainDataArrayCopy[index].value[i] = newValue;
+                          // setNewMainDataArray(newMainDataArrayCopy);
+                        }}
+                      />
+                    ))}
+                </td>
+                {/* Detected Number */}
+                <td className="">
+                  {!!newMainDataArray[index] &&
+                    ezObj(newMainDataArray[index]!).value.map((v, i) => (
+                      <span
+                        key={`${id5}-${i}`}
+                        className={`block whitespace-nowrap p-3  ${
+                          formatPhoneNumber(v).length > 0
+                            ? "bg-green-500"
+                            : "bg-rose-800"
+                        }`}
+                      >
+                        <span className="text-sm opacity-0">{i + 1}</span>
+                        <span>{formatPhoneNumber(v)}</span>
+                      </span>
+                    ))}
+                </td>
+              </tr>
+            ))}
+            {mainDataArray?.length === 0 && (
+              <tr>
+                <td colSpan={3} className="text-center">
+                  No Data Loaded
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
       <button
         className="btn-success btn mt-8 w-80"
         onClick={() => {
-          onContinue(desiredNumbers);
+          onContinue(newMainDataArray);
         }}
       >
         Continue

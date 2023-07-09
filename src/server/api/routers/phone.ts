@@ -62,6 +62,9 @@ export const phoneRouter = createTRPCRouter({
   callLogs: publicProcedure
     .input(z.object({ number: z.string() }))
     .query(async ({ input }) => {
+      if (env.TWILIO_USE_TEST_CREDENTIALS === "true") {
+        return [];
+      }
       return await client.calls.list({
         to: input.number,
         limit: 1,

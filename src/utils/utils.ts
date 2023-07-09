@@ -51,7 +51,20 @@ export function convertToSpreadSheetNumber(str: string) {
   return result;
 }
 
-export function ezObj(variable: { [x: string]: string[] }) {
+export function convertToSpreadSheetLetter(number: number) {
+  var base = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  var result = "";
+
+  while (number > 0) {
+    var remainder = (number - 1) % 26;
+    result = base.charAt(remainder) + result;
+    number = Math.floor((number - 1) / 26);
+  }
+
+  return result;
+}
+
+export function ezObj(variable: { [key: string]: string[] }) {
   const title = Object.keys(variable)[0];
   const value = Object.values(variable)[0];
   return { title: title as string, value: value as string[] };
