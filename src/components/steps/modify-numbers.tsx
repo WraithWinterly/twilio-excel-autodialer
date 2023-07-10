@@ -96,7 +96,7 @@ export default function ModifyNumbers({
                             )[0];
                             // console.log(val);
 
-                            val![i] = e.target.value;
+                            val![i] = fixPhoneNumber(e.target.value);
                             // console.log(val[i]);
 
                             return newMainDataArrayCopy;

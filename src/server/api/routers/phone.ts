@@ -25,10 +25,11 @@ const createTwilioCall = async (number: string) => {
       : env.TWILIO_WEBHOOK_SERVEO_URL;
 
   const data = await client.calls.create({
-    url: `http://demo.twilio.com/docs/voice.xml'`, // Replace with your webhook URL
+    url: `https://handler.twilio.com/twiml/EH2494992acb1672294953af3c9d04e282`, // Replace with your webhook URL
     // statusCallback: `https://${webhookURL}/api/callback`, // Replace with your webhook URL
     to: number, // Replace with the recipient's phone number
     from: fromPhoneNumber, // Replace with your Twilio phone number
+    applicationSid: "APdd2c123aa5c11634dbd37cf2e2825077",
   });
 
   return data;
