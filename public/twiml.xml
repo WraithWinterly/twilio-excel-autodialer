@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say>Thanks for calling!</Say>
+  <Play>https://github.com/WraithWinterly/twilio-excel-autodialer/raw/main/public/sample.m4a</Play>
 </Response>
