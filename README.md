@@ -1,28 +1,40 @@
-# Create T3 App
+# DialFusion
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Welcome to the THE ULTIMATE DEVELOPER CHAMPIONSHIP hosted by Michael and Joseph at the Syndacate.
 
-## What's next? How do I make an app with this?
+This is my submission for the competition. DialFusion is an autodilaer powered by t3-app stack including Next.js and Tailwind, with the twilio api. 
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+To start, you must copy the `.env.example` file into a new file called `.env`. Enter your necessary api keys and callback URLs. You must fill in all of these or the application will not start.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+Run `npm i` (or, preferrabily, `pnpm i` in the terminal to install dependencies.
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+Run `npm run dev` or `pnpm run dev` to start the development server.
 
-## Learn More
+## 1st submission:
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+Purpose: Can Joseph upload the .xlsx that contains a list of prospects?
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+Submission Video:
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+https://www.youtube.com/watch?v=qOGSnJw2GBA
 
-## How do I deploy this?
+Commit:
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+https://github.com/WraithWinterly/twilio-excel-autodialer/tree/0f595088990b8bbe04adf32fd8e858c631166970
+
+## 2nd submission:
+
+Purpose:
+- Can the app dial a single number?
+- What happens if the number doesn’t connect?
+- - Retry the call 3 times, before sending voice, text/email.
+- - Send personalized voice message, text and email.
+
+
+Submission Video:
+
+[https://www.youtube.com/watch?v=qOGSnJw2GBA](https://www.youtube.com/watch?v=HvZpgcEPpzE)
+
+Commit:
+
+[https://github.com/WraithWinterly/twilio-excel-autodialer/tree/0f595088990b8bbe04adf32fd8e858c631166970](https://github.com/WraithWinterly/twilio-excel-autodialer/tree/2eb15905cb4b7df601b54e5ae7e036da691109d6)
