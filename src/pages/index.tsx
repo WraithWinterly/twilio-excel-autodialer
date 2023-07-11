@@ -90,6 +90,7 @@ export default function Home() {
                 setMainDataArray(newMainDataArray);
                 setCurrentStep(Steps.ModifyNumbers);
               }}
+              setIndexMainDataArray={setMainDataArray}
             />
           )}
         </div>
@@ -108,7 +109,11 @@ export default function Home() {
 
         <div hidden={currentStep !== Steps.CallNumbers}>
           {currentStep === Steps.CallNumbers && (
-            <CallNumbers mainDataArray={mainDataArray} desiredNumbers={[]} />
+            <CallNumbers
+              mainDataArray={mainDataArray}
+              desiredNumbers={[]}
+              setMainDataArray={setMainDataArray}
+            />
           )}
         </div>
       </div>

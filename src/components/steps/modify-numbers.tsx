@@ -39,7 +39,7 @@ export default function ModifyNumbers({
   const id5 = useId();
 
   return (
-    <div className="flex w-full max-w-2xl flex-col gap-2">
+    <div className="flex w-full  flex-1 flex-col items-center gap-2">
       <h1 className="text-3xl font-bold">Modify Numbers</h1>
       <p className="max-w-xl text-gray-200">
         This table has three columns. The first column contains the original
@@ -50,7 +50,7 @@ export default function ModifyNumbers({
       </p>
       <b>You may leave the values red or empty and they will be ignored.</b>
 
-      <div className="mx-auto flex h-[400px] w-full gap-8 overflow-auto pt-10">
+      <div className="mx-auto mt-10 flex h-[400px] w-11/12 justify-center gap-8 overflow-auto">
         <table>
           <thead>
             <tr>
@@ -64,7 +64,7 @@ export default function ModifyNumbers({
             {mainDataArray?.map((data, index) => (
               <tr
                 key={`${id3}-${index}`}
-                className="items-center border-b-4 border-solid border-gray-800 text-start"
+                className="w-full items-center border-b-4 border-solid border-gray-800 text-start"
               >
                 {/* Identifier */}
                 {!!mainDataArray && (
@@ -85,7 +85,7 @@ export default function ModifyNumbers({
                   {!!newMainDataArray[index] &&
                     ezObj(newMainDataArray[index]!).value.map((v, i) => (
                       <input
-                        className={`input m-0 block rounded-none border-none border-gray-500 bg-violet-800/80 p-1`}
+                        className={`input m-0 block w-full rounded-none border-none border-gray-500 bg-violet-800/80 p-1`}
                         key={`${id4}-${i}`}
                         defaultValue={v}
                         onBlur={(e) => {

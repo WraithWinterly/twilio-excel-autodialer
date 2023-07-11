@@ -16,8 +16,10 @@ const MAX_ROWS_DEFAULT_VALUE = 10;
 
 export default function UploadFile({
   onContinue,
+  setIndexMainDataArray,
 }: {
   onContinue: (mainDataArray: MainDataArray) => void;
+  setIndexMainDataArray: (mainDataArray: MainDataArray) => void;
 }) {
   const id = useId();
   const id2 = useId();
@@ -215,7 +217,7 @@ export default function UploadFile({
           </div>
           {}
           <label htmlFor="" className="w-full max-w-sm">
-            Column Letter(s) to load NAMES / IDENFITIER (how you will know what
+            Column Letter(s) to load NAMES / IDENTIFIER (how you will know what
             each number is for)
           </label>
           <input
@@ -377,6 +379,7 @@ export default function UploadFile({
             onClick={() => {
               setFile(undefined);
               setMainDataArray([]);
+              setIndexMainDataArray([]);
               onContinue([]);
             }}
           >
@@ -485,14 +488,22 @@ function readExcelFile(
         return value != null ? String(value) : "";
       });
 
+      // Get the identifier value from the row
+      const identifierValue = row[columnNumberIdentifier - 1];
+
       // Check if any non-empty value exists in the columnValues array
       const hasNonEmptyValue = columnValues.some((value) => value.length > 0);
+
+      // If identifierValue is null or empty, use the first phone number instead
+      const identifier =
+        identifierValue != null && String(identifierValue).trim() !== ""
+          ? String(identifierValue)
+          : columnValues.find((value) => value.length > 0) || "No Identifier";
 
       // Push the columnValues array into localColumnNumberIdentifiers if it has at least one non-empty value
       if (hasNonEmptyValue) {
         localColumnNumberIdentifiers.push({
-          [String(row[columnNumberIdentifier - 1] ?? "No Identifier")]:
-            columnValues.filter((value) => value.length > 0),
+          [identifier]: columnValues.filter((value) => value.length > 0),
         });
       }
 

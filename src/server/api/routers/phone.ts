@@ -71,4 +71,32 @@ export const phoneRouter = createTRPCRouter({
         limit: 1,
       });
     }),
+  text: publicProcedure
+    .input(z.object({ number: z.string(), message: z.string() }))
+    .mutation(async ({ input }) => {
+      if (input.number.length < 10) {
+        return {
+          success: false,
+          error: "Invalid phone number",
+        };
+      }
+      try {
+        const data = await client.messages.create({
+          body: input.message,
+          to: input.number, // Replace with your phone number
+          from: fromPhoneNumber, // Replace with a Twilio number
+        });
+
+        return {
+          success: true,
+          data: data,
+        };
+      } catch (e) {
+        const error = e as Error;
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+    }),
 });
